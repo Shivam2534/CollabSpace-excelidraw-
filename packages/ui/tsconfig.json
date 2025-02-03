@@ -3,6 +3,6 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": ["src"],
+  "include": ["src", "../../apps/http-backend/src/middleware"],
   "exclude": ["node_modules", "dist"]
 }

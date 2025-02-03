@@ -1,50 +1,83 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+  background-color: #f0f2f5;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+.message {
+  max-width: 70%;
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  border-radius: 18px;
+  line-height: 1.4;
+  position: relative;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
+.message.user {
+  align-self: flex-end;
+  background-color: #0084ff;
+  color: white;
+  margin-left: auto;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+.message.other {
+  align-self: flex-start;
+  background-color: #e4e6eb;
+  color: #050505;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.message-input {
+  display: flex;
+  padding: 20px;
+  background-color: white;
+  border-top: 1px solid #e4e6eb;
 }
 
-.imgDark {
-  display: none;
+.message-input input {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  font-size: 16px;
+  background-color: #f0f2f5;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-
-  .imgLight {
-    display: none;
-  }
-  .imgDark {
-    display: unset;
-  }
+.message-input input:focus {
+  outline: none;
 }
+
+.message-input button {
+  background-color: #0084ff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-left: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message-input button:hover {
+  background-color: #0073e6;
+}
+
+.message-input button:focus {
+  outline: none;
+}
+
+.send-icon {
+  width: 20px;
+  height: 20px;
+}
+
