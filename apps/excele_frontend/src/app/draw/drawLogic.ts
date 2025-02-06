@@ -1,19 +1,51 @@
+import path from "path";
 import { HttPServerConnection } from "./httpServerConnection";
 
-interface shapeType {
-  type: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+type shapeType =
+  | {
+      type: "rect";
+      color: string;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }
+  | {
+      type: "circle";
+      color: string;
+      x: number;
+      y: number;
+      radius: number;
+      startAngle: number;
+      endAngle: number;
+    }
+  | {
+      type: "arrow";
+      color: string;
+      fromx: number;
+      fromy: number;
+      tox: number;
+      toy: number;
+    }
+  | {
+      type: "line";
+      color: string;
+      startX: number;
+      startY: number;
+      endX: number;
+      endY: number;
+    }
+  | {
+      type: "pencil";
+      color: string;
+      path: { x: number; y: number }[];
+    };
 
 export default async function DrawLogic(
   canvas: HTMLCanvasElement,
   roomId: string | number,
   socket: WebSocket
 ) {
-  console.log("Draw logic called");
   const ctx = canvas.getContext("2d");
 
   if (!ctx) {
@@ -21,7 +53,6 @@ export default async function DrawLogic(
   }
 
   // Connecting to the HTTP server and getting back pre-existing chats/shapes
-  // const existingShapes: shapeType[] = [];
   const existingShapes: shapeType[] = await HttPServerConnection(roomId);
 
   socket.onmessage = (event) => {
@@ -44,8 +75,45 @@ export default async function DrawLogic(
     // rendering the prev stored shapes
     existingShapes.map((shape) => {
       if (shape.type == "rect") {
-        ctx.strokeStyle = "white";
+        ctx.strokeStyle = shape.color;
+        //@ts-ignore
         ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+      } else if (shape.type == "circle") {
+        ctx.beginPath();
+        ctx.arc(
+          //@ts-ignore
+          shape.x,
+          shape.y,
+          shape.radius,
+          shape.startAngle,
+          shape.endAngle
+        );
+        ctx.strokeStyle = shape.color;
+        ctx.stroke();
+      } else if (shape.type == "arrow") {
+        canvas_arrow(
+          ctx,
+          shape.fromx,
+          shape.fromy,
+          shape.tox,
+          shape.toy,
+          shape.color
+        );
+      } else if (shape.type == "line") {
+        canvas_line(
+          ctx,
+          shape.startX,
+          shape.startY,
+          shape.endX,
+          shape.endY,
+          shape.color
+        );
+      } else if (shape.type == "pencil") {
+        ctx.strokeStyle = shape.color;
+        ctx.beginPath();
+        ctx.moveTo(shape.path[0].x, shape.path[0].y);
+        shape.path.forEach((point) => ctx.lineTo(point.x, point.y));
+        ctx.stroke();
       }
     });
   }
@@ -61,6 +129,8 @@ export default async function DrawLogic(
 
     startX = e.clientX;
     startY = e.clientY;
+    currentPath.length = 0;
+    currentPath.push({ x: startX, y: startY });
   });
 
   canvas.addEventListener("mouseup", (e) => {
@@ -69,13 +139,62 @@ export default async function DrawLogic(
     const width = e.clientX - startX;
     const height = e.clientY - startY;
 
-    const newShape: shapeType = {
-      type: "rect",
-      x: startX,
-      y: startY,
-      width,
-      height,
-    };
+    let newShape;
+    //@ts-ignore
+    if (window.currentShape == "rect") {
+      newShape = {
+        type: "rect",
+        color: window.CurrentColor,
+        x: startX,
+        y: startY,
+        width,
+        height,
+      };
+      //@ts-ignore
+    } else if (window.currentShape == "circle") {
+      const finalX = width + startX;
+      const finalY = height + startY;
+      const dist = Math.sqrt(
+        Math.pow(finalX - startX, 2) + Math.pow(finalY - startY, 2)
+      );
+
+      newShape = {
+        type: "circle",
+        color: window.CurrentColor,
+        x: startX,
+        y: startY,
+        radius: dist,
+        startAngle: 0,
+        endAngle: 2 * Math.PI,
+      };
+      //@ts-ignore
+    } else if (window.currentShape == "arrow") {
+      newShape = {
+        type: "arrow",
+        color: window.CurrentColor,
+        fromx: startX,
+        fromy: startY,
+        tox: e.clientX,
+        toy: e.clientY,
+      };
+      //@ts-ignore
+    } else if (window.currentShape == "line") {
+      newShape = {
+        type: "line",
+        color: window.CurrentColor,
+        startX,
+        startY,
+        endX: e.clientX,
+        endY: e.clientY,
+      };
+      //@ts-ignore
+    } else if (window.currentShape == "pencil") {
+      newShape = {
+        type: "pencil",
+        color: window.CurrentColor,
+        path: currentPath,
+      };
+    }
 
     const parsedShap = JSON.stringify(newShape);
     socket.send(
@@ -87,6 +206,51 @@ export default async function DrawLogic(
     );
   });
 
+  function canvas_arrow(
+    context: CanvasRenderingContext2D,
+    fromx: number,
+    fromy: number,
+    tox: number,
+    toy: number,
+    color: string
+  ) {
+    context.beginPath();
+    var headlen = 10; // length of head in pixels
+    var dx = tox - fromx;
+    var dy = toy - fromy;
+    var angle = Math.atan2(dy, dx);
+    context.moveTo(fromx, fromy);
+    context.lineTo(tox, toy);
+    context.lineTo(
+      tox - headlen * Math.cos(angle - Math.PI / 6),
+      toy - headlen * Math.sin(angle - Math.PI / 6)
+    );
+    context.moveTo(tox, toy);
+    context.lineTo(
+      tox - headlen * Math.cos(angle + Math.PI / 6),
+      toy - headlen * Math.sin(angle + Math.PI / 6)
+    );
+    context.strokeStyle = color;
+    context.stroke();
+  }
+
+  function canvas_line(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    startY: number,
+    endx: number,
+    endY: number,
+    color: string
+  ) {
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endx, endY);
+    ctx.strokeStyle = color;
+    ctx.stroke();
+  }
+
+  const currentPath: { x: number; y: number }[] = [];
+
   canvas.addEventListener("mousemove", (e) => {
     if (isClickedOnCanvas) {
       console.log("mousemove");
@@ -94,10 +258,51 @@ export default async function DrawLogic(
       const height = e.clientY - startY;
 
       clearCanvasBoard(ctx, canvas.width, canvas.height);
-
-      // Draw new rectangle
-      ctx.strokeStyle = "white";
-      ctx.strokeRect(startX, startY, width, height);
+      //@ts-ignore
+      if (window.currentShape == "rect") {
+        // Draw new rectangle
+        ctx.strokeStyle = window.CurrentColor;
+        ctx.strokeRect(startX, startY, width, height);
+        //@ts-ignore
+      } else if (window.currentShape == "circle") {
+        const finalX = width + startX;
+        const finalY = height + startY;
+        const dist = Math.sqrt(
+          Math.pow(finalX - startX, 2) + Math.pow(finalY - startY, 2)
+        );
+        ctx.beginPath();
+        ctx.arc(startX, startY, dist, 0, 2 * Math.PI);
+        ctx.strokeStyle = window.CurrentColor;
+        ctx.stroke();
+        //@ts-ignore
+      } else if (window.currentShape == "arrow") {
+        canvas_arrow(
+          ctx,
+          startX,
+          startY,
+          e.clientX,
+          e.clientY,
+          window.CurrentColor
+        );
+        //@ts-ignore
+      } else if (window.currentShape == "line") {
+        canvas_line(
+          ctx,
+          startX,
+          startY,
+          e.clientX,
+          e.clientY,
+          window.CurrentColor
+        );
+        //@ts-ignore
+      } else if (window.currentShape == "pencil") {
+        currentPath.push({ x: e.clientX, y: e.clientY });
+        ctx.strokeStyle = window.CurrentColor;
+        ctx.beginPath();
+        ctx.moveTo(currentPath[0].x, currentPath[0].y);
+        currentPath.forEach((point) => ctx.lineTo(point.x, point.y));
+        ctx.stroke();
+      }
     }
   });
 }

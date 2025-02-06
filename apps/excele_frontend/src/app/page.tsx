@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Pencil,
@@ -8,11 +7,17 @@ import {
   Sparkles,
   Github,
   Download,
+  Menu,
+  CircleUserRoundIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { getServerSession } from "next-auth";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { SessionProvider } from "next-auth/react";
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import CreateRoom from "./ourComponents/CreateRoom";
+import EnterRoom from "./ourComponents/EnterRoom";
+import LandingNavbar from "./ourComponents/LandingNavbar";
 
 export default function SessionProviderFn() {
   return (
@@ -24,9 +29,27 @@ export default function SessionProviderFn() {
 
 function App() {
   const { data: session, status } = useSession();
-  console.log(session, status);
+
+  const [IsDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+  const inputRef = useRef(null);
+  const RoomIdRef = useRef(null);
+  const SuccessMsg = useRef(null);
+
+  const [IsEnterRoomDialogOpen, setIsEnterRoomDialogOpen] =
+    useState<boolean>(false);
+
   return (
     <div className="min-h-screen bg-background">
+      {/* top bar */}
+      <div className="w-full">
+        <LandingNavbar
+          session={session}
+          status={status}
+          setIsDialogOpen={setIsDialogOpen}
+        />
+      </div>
+
       {/* Hero Section */}
       <header className="relative overflow-hidden">
         <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
@@ -55,19 +78,21 @@ function App() {
                 </div>
               ) : (
                 <div className="flex gap-6">
-                  <Link href={"/canvas/123"}>
-                    <Button size="lg" className="h-12 px-6">
-                      Board
-                      <Pencil className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <Button
+                    size="lg"
+                    className="h-12 px-6"
+                    onClick={() => setIsEnterRoomDialogOpen((prev) => !prev)}
+                  >
+                    Join Room
+                    <Pencil className="ml-2 h-4 w-4" />
+                  </Button>
                   <Button
                     variant="outline"
                     size="lg"
                     className="h-12 px-6"
-                    onClick={() => signOut()}
+                    onClick={() => setIsDialogOpen((prev) => !prev)}
                   >
-                    logout
+                    Create Room
                   </Button>
                 </div>
               )}
@@ -175,6 +200,19 @@ function App() {
           </div>
         </div>
       </footer>
+
+      <CreateRoom
+        IsDialogOpen={IsDialogOpen}
+        SuccessMsg={SuccessMsg}
+        inputRef={inputRef}
+        RoomIdRef={RoomIdRef}
+        setIsDialogOpen={setIsDialogOpen}
+      />
+      <EnterRoom
+        IsEnterRoomDialogOpen={IsEnterRoomDialogOpen}
+        setIsEnterRoomDialogOpen={setIsEnterRoomDialogOpen}
+        session={session}
+      />
     </div>
   );
 }
