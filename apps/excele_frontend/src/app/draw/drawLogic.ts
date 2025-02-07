@@ -41,12 +41,22 @@ type shapeType =
       path: { x: number; y: number }[];
     };
 
+type eventType = {
+  type: string;
+  timestamp: number;
+  data: { x: number; y: number };
+};
 export default async function DrawLogic(
   canvas: HTMLCanvasElement,
   roomId: string | number,
-  socket: WebSocket
+  socket: WebSocket,
+  events: eventType,
+  ctx: CanvasRenderingContext2D,
+  startRecording: boolean
 ) {
-  const ctx = canvas.getContext("2d");
+  let startTime: number | null = null;
+  let pauseStartTime: number | null = null;
+  let pausetime: number = 0;
 
   if (!ctx) {
     return;
@@ -69,7 +79,7 @@ export default async function DrawLogic(
     width: number,
     height: number
   ) {
-    // Clear previous rectangle
+    console.log("cleared");
     ctx.clearRect(0, 0, width, height);
 
     // rendering the prev stored shapes
@@ -119,6 +129,12 @@ export default async function DrawLogic(
   }
   clearCanvasBoard(ctx, canvas.width, canvas.height);
 
+  function recordEvent(type: string, data: { x: number; y: number }) {
+    if (startTime === null) return;
+    const timestamp = Date.now() - startTime - pausetime;
+    events.current.push({ type, timestamp, data });
+  }
+
   let isClickedOnCanvas = false;
   let startX = 0;
   let startY = 0;
@@ -126,6 +142,17 @@ export default async function DrawLogic(
   canvas.addEventListener("mousedown", (e) => {
     isClickedOnCanvas = true;
     console.log("mousedown");
+    if (startRecording.current) {
+      if (startTime == null) {
+        // writing first time
+        startTime = Date.now();
+        pausetime = 0;
+      } else if (pauseStartTime != null) {
+        pausetime = Date.now() - pauseStartTime - 1000; // i am adding 2 sec so ,that is take time to start new phase
+        pauseStartTime = null;
+      }
+      recordEvent("start", { x: e.clientX, y: e.clientY });
+    }
 
     startX = e.clientX;
     startY = e.clientY;
@@ -136,6 +163,10 @@ export default async function DrawLogic(
   canvas.addEventListener("mouseup", (e) => {
     isClickedOnCanvas = false;
     console.log("mouseup");
+    if (startRecording.current) {
+      recordEvent("end", { x: e.clientX, y: e.clientY });
+      pauseStartTime = Date.now();
+    }
     const width = e.clientX - startX;
     const height = e.clientY - startY;
 
@@ -256,6 +287,9 @@ export default async function DrawLogic(
       console.log("mousemove");
       const width = e.clientX - startX;
       const height = e.clientY - startY;
+      if (startRecording.current) {
+        recordEvent("draw", { x: e.clientX, y: e.clientY });
+      }
 
       clearCanvasBoard(ctx, canvas.width, canvas.height);
       //@ts-ignore
