@@ -129,9 +129,13 @@ export default async function DrawLogic(
   }
   clearCanvasBoard(ctx, canvas.width, canvas.height);
 
+  let baseTimestampOffset =
+    events.current.length > 0
+      ? events.current[events.current.length - 1].timestamp
+      : 0;
   function recordEvent(type: string, data: { x: number; y: number }) {
     if (startTime === null) return;
-    const timestamp = Date.now() - startTime - pausetime;
+    const timestamp = baseTimestampOffset + Date.now() - startTime - pausetime;
     events.current.push({ type, timestamp, data });
   }
 
@@ -166,7 +170,9 @@ export default async function DrawLogic(
     if (startRecording.current) {
       recordEvent("end", { x: e.clientX, y: e.clientY });
       pauseStartTime = Date.now();
+      localStorage.setItem("Prev_Draw", JSON.stringify(events));
     }
+
     const width = e.clientX - startX;
     const height = e.clientY - startY;
 
