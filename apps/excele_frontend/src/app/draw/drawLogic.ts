@@ -1,51 +1,10 @@
 import path from "path";
 import { HttPServerConnection } from "./httpServerConnection";
+import shapeType from "../types/shape";
+import eventType from "../types/event";
+import { canvas_arrow } from "../ourComponents/ShapFun";
+import { canvas_line } from "../ourComponents/ShapFun";
 
-type shapeType =
-  | {
-      type: "rect";
-      color: string;
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-    }
-  | {
-      type: "circle";
-      color: string;
-      x: number;
-      y: number;
-      radius: number;
-      startAngle: number;
-      endAngle: number;
-    }
-  | {
-      type: "arrow";
-      color: string;
-      fromx: number;
-      fromy: number;
-      tox: number;
-      toy: number;
-    }
-  | {
-      type: "line";
-      color: string;
-      startX: number;
-      startY: number;
-      endX: number;
-      endY: number;
-    }
-  | {
-      type: "pencil";
-      color: string;
-      path: { x: number; y: number }[];
-    };
-
-type eventType = {
-  type: string;
-  timestamp: number;
-  data: { x: number; y: number };
-};
 export default async function DrawLogic(
   canvas: HTMLCanvasElement,
   roomId: string | number,
@@ -124,6 +83,8 @@ export default async function DrawLogic(
         ctx.moveTo(shape.path[0].x, shape.path[0].y);
         shape.path.forEach((point) => ctx.lineTo(point.x, point.y));
         ctx.stroke();
+      } else if (shape.type === "any") {
+        eval(shape.shape)
       }
     });
   }
@@ -242,49 +203,6 @@ export default async function DrawLogic(
       })
     );
   });
-
-  function canvas_arrow(
-    context: CanvasRenderingContext2D,
-    fromx: number,
-    fromy: number,
-    tox: number,
-    toy: number,
-    color: string
-  ) {
-    context.beginPath();
-    var headlen = 10; // length of head in pixels
-    var dx = tox - fromx;
-    var dy = toy - fromy;
-    var angle = Math.atan2(dy, dx);
-    context.moveTo(fromx, fromy);
-    context.lineTo(tox, toy);
-    context.lineTo(
-      tox - headlen * Math.cos(angle - Math.PI / 6),
-      toy - headlen * Math.sin(angle - Math.PI / 6)
-    );
-    context.moveTo(tox, toy);
-    context.lineTo(
-      tox - headlen * Math.cos(angle + Math.PI / 6),
-      toy - headlen * Math.sin(angle + Math.PI / 6)
-    );
-    context.strokeStyle = color;
-    context.stroke();
-  }
-
-  function canvas_line(
-    ctx: CanvasRenderingContext2D,
-    startX: number,
-    startY: number,
-    endx: number,
-    endY: number,
-    color: string
-  ) {
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(endx, endY);
-    ctx.strokeStyle = color;
-    ctx.stroke();
-  }
 
   const currentPath: { x: number; y: number }[] = [];
 

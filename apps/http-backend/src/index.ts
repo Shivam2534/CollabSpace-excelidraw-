@@ -10,11 +10,19 @@ import {
 } from "@repo/common/types";
 import { prismaClient } from "@repo/db/client";
 import cors from "cors";
+import OpenAI from "openai";
+import dotenv from "dotenv";
+
 // *************************************************************************
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+dotenv.config();
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 app.post("/api/v1/signup", async (req, res) => {
   console.log("request reached at /v1/signup endpoint");
@@ -272,6 +280,66 @@ app.post("/api/v1/checkroom", middleware, async (req, res) => {
     success: true,
     message: "Room Exist",
   });
+});
+
+app.post("/api/v1/chat", middleware, async (req, res) => {
+  if (req.method === "POST") {
+    const { prompt } = req.body;
+    console.log("prompt-", prompt);
+
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo-0125",
+        messages: [
+          {
+            role: "user",
+            content: `
+            USER PROMPT- ${prompt}
+            You're a Canvas shape drawer. Use ctx to draw the specified shape. No Math.random or dynamic functions. Use server-provided literal values for unspecified details:
+           
+            - Position:random value between x (0-1280), y (0-720)
+            - Size:width/height/length random value between(50-200), radius random value between(25-100)
+            - Border: strictly use white color for border, no fill unless requested
+
+            Supported shapes: rectangle, square, circle, ellipse, triangle, polygon, and line (or any shape specified by the user).
+            1. don't wrap the code inside anything.
+            2. Draw user-specified shape. Return only drawing commands with literal values. No variables, comments, or code blocks. Ensure each generation places the shape at a different location within canvas bounds. Double-check output against requirements.
+            3. on every request make nsew shape , don't use previous data
+            4. don't use Math.random() function or dynamic values
+            5. before returning response , always recheck shape , it should follow all the requirements
+
+            replace this [SHAPE_DRAWING_CODE] part of code to make user prompted shape everytime with new coordinates and features.
+            6. (important and strictly follow this)on every request response should be same in this formate only nothing else, no metter how many times user made a request.
+            7. also don't wrap in Backtick also.
+
+            ctx.strokeStyle = '[replace according to prompt, default white]';
+            ctx.beginPath();
+            [SHAPE_DRAWING_CODE]
+            ctx.stroke();
+            
+            `,
+          },
+        ],
+      });
+      // console.log(completion);
+      const shape = completion.choices[0]?.message.content;
+      console.log("completion:", shape);
+
+      if (!shape) {
+        res.status(200).json({
+          message: "shape can not created",
+          success: false,
+        });
+      }
+
+      res.status(200).json({ success: true, shape });
+    } catch (error) {
+      console.error("Error generating UI:", error);
+      res.status(500).json({ error: "Failed to generate UI" });
+    }
+  } else {
+    res.status(405).json({ message: "Method Not Allowed" });
+  }
 });
 
 app.listen(3001);

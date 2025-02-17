@@ -2,26 +2,19 @@
 import { useEffect, useRef, useState } from "react";
 import DrawLogic from "./drawLogic";
 import { useSocket } from "@repo/common/hooks";
-import { Button } from "@/components/ui/button";
-
 import ColorPanal from "../ourComponents/colorPanal";
 import Recording from "../ourComponents/Recording";
 import ToolPanal from "../ourComponents/ToolPanal";
+import EventType from "../types/event";
 
 interface Props {
   roomId: string | number;
 }
 
-type EventType = {
-  type: string;
-  timestamp: number;
-  data: { x: number; y: number };
-};
-
 export default function CanvasRoom({ roomId }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [currentShape, setCurrentShape] = useState("rect");
-  const [activated, setActivated] = useState("rect");
+  const [currentShape, setCurrentShape] = useState("");
+  const [activated, setActivated] = useState("");
   const [openColorPanal, setOpenColorPanal] = useState(true);
   const [currentColor, setCurrentColor] = useState("white");
   const [replayFlag, setReplayFlag] = useState(false);
@@ -32,11 +25,11 @@ export default function CanvasRoom({ roomId }: Props) {
   const { loading, socket } = useSocket();
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
+  //@ts-ignore
   const arr = JSON.parse(localStorage.getItem("Prev_Draw"));
   if (arr && events.current.length == 0) {
     events = arr;
   }
-  // Update globals (for DrawLogic, if needed)
   useEffect(() => {
     //@ts-ignore
     window.currentShape = currentShape;
@@ -44,7 +37,6 @@ export default function CanvasRoom({ roomId }: Props) {
     window.CurrentColor = currentColor;
   }, [currentShape, currentColor]);
 
-  // Initialize DrawLogic when socket is ready
   useEffect(() => {
     if (!loading && socket && canvasRef.current) {
       const canvas = canvasRef.current;
@@ -59,7 +51,6 @@ export default function CanvasRoom({ roomId }: Props) {
     }
   }, [loading, socket, roomId]);
 
-  // Trigger replay when replayFlag is set and we're not recording
   useEffect(() => {
     if (replayFlag && ctx && !recording) {
       setReplaying(true);
@@ -68,15 +59,16 @@ export default function CanvasRoom({ roomId }: Props) {
     }
   }, [replayFlag, ctx, recording]);
 
-  // Change shape handler
   function changeShape(shape: string) {
+    if (activated == shape) {
+      setActivated("");
+      setCurrentShape("");
+    }
     setActivated(shape);
     setCurrentShape(shape);
   }
 
-  // Replay the drawing using recorded events
   function replayDrawing(replayCtx: CanvasRenderingContext2D) {
-    // Clear the canvas for a fresh replay
     replayCtx.clearRect(
       0,
       0,
@@ -92,13 +84,11 @@ export default function CanvasRoom({ roomId }: Props) {
       return;
     }
 
-    // Use the timestamp of the first event as the base
     const baseTime = events.current[0].timestamp;
     events.current.forEach((event, index) => {
       const delay = event.timestamp - baseTime;
       setTimeout(() => {
         simulateEvent(event, replayCtx);
-        // When the last event has been replayed, clear replay state
         if (index === events.current.length - 1) {
           setReplaying(false);
           setReplayFlag(false);
@@ -107,7 +97,6 @@ export default function CanvasRoom({ roomId }: Props) {
     });
   }
 
-  // Simulate a recorded event on the canvas
   function simulateEvent(
     event: EventType,
     replayCtx: CanvasRenderingContext2D
@@ -131,10 +120,8 @@ export default function CanvasRoom({ roomId }: Props) {
     }
   }
 
-  // Toggle recording state: start new recording or stop current one
   function toggleRecording() {
     if (recording) {
-      // Stop recording: signal DrawLogic to stop recording further events
       startRecording.current = false;
       setRecording(false);
     } else {
@@ -162,7 +149,6 @@ export default function CanvasRoom({ roomId }: Props) {
           activated={activated}
           setOpenColorPanal={setOpenColorPanal}
           canvasRef={canvasRef}
-          events={events}
           roomId={roomId}
         />
       )}

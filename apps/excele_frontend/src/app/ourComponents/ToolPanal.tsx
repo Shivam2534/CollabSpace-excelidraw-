@@ -10,48 +10,11 @@ import {
   Menu,
   Plus,
   Hand,
+  AlignVerticalJustifyStartIcon,
 } from "lucide-react";
 import { HttPServerConnection } from "../draw/httpServerConnection";
-
-type shapeType =
-  | {
-      type: "rect";
-      color: string;
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-    }
-  | {
-      type: "circle";
-      color: string;
-      x: number;
-      y: number;
-      radius: number;
-      startAngle: number;
-      endAngle: number;
-    }
-  | {
-      type: "arrow";
-      color: string;
-      fromx: number;
-      fromy: number;
-      tox: number;
-      toy: number;
-    }
-  | {
-      type: "line";
-      color: string;
-      startX: number;
-      startY: number;
-      endX: number;
-      endY: number;
-    }
-  | {
-      type: "pencil";
-      color: string;
-      path: { x: number; y: number }[];
-    };
+import shapeType from "../types/shape";
+import Ai from "./Ai";
 
 type ToolPanalType = {
   changeShape: (shape: string) => void;
@@ -67,7 +30,6 @@ function ToolPanal({
   activated,
   setOpenColorPanal,
   canvasRef,
-  events,
   roomId,
 }: ToolPanalType) {
   // Store the shapes fetched from the server.
@@ -195,6 +157,7 @@ function ToolPanal({
     // Apply pan and zoom transformations.
     ctx.translate(translatePos.x, translatePos.y);
     ctx.scale(scale, scale);
+    console.log("Size of before-", existingShapes.length);
 
     // Draw each shape.
     existingShapes.forEach((shape) => {
@@ -238,6 +201,9 @@ function ToolPanal({
           shape.path.forEach((point) => ctx.lineTo(point.x, point.y));
           ctx.stroke();
         }
+      } else if (shape.type === "any") {
+        console.log("Size of after-", existingShapes.length, shape.shape);
+        eval(shape.shape);
       }
     });
     ctx.restore();
@@ -247,6 +213,8 @@ function ToolPanal({
   useEffect(() => {
     draw();
   }, [scale, translatePos, existingShapes]);
+
+  const [OpenInputBox, setOpenInputBox] = useState(false);
 
   return (
     <div>
@@ -297,6 +265,21 @@ function ToolPanal({
         >
           <Hand />
         </Button>
+        <Button
+          onClick={() => setOpenInputBox((p) => !p)}
+          className={`${activated === "ai" ? "text-red-400" : "text-white"}`}
+        >
+          AI
+        </Button>
+      </div>
+
+      <div className="absolute top-0 left-1/2 -translate-x-1/2">
+        <Ai
+          OpenInputBox={OpenInputBox}
+          setOpenInputBox={setOpenInputBox}
+          setExistingShapes={setExistingShapes}
+          roomId={roomId}
+        />
       </div>
 
       {/* Left menu for toggling the color panel */}
