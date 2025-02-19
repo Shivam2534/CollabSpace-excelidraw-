@@ -84,7 +84,7 @@ export default async function DrawLogic(
         shape.path.forEach((point) => ctx.lineTo(point.x, point.y));
         ctx.stroke();
       } else if (shape.type === "any") {
-        eval(shape.shape)
+        eval(shape.shape);
       }
     });
   }
@@ -121,8 +121,10 @@ export default async function DrawLogic(
 
     startX = e.clientX;
     startY = e.clientY;
-    currentPath.length = 0;
-    currentPath.push({ x: startX, y: startY });
+    if (window.currentShape) {
+      currentPath.length = 0;
+      currentPath.push({ x: startX, y: startY });
+    }
   });
 
   canvas.addEventListener("mouseup", (e) => {
@@ -194,14 +196,17 @@ export default async function DrawLogic(
       };
     }
 
-    const parsedShap = JSON.stringify(newShape);
-    socket.send(
-      JSON.stringify({
-        type: "chat",
-        roomId: roomId,
-        message: parsedShap,
-      })
-    );
+    // send msg only when there is a msg
+    if (window.currentShape != "") {
+      const parsedShap = JSON.stringify(newShape);
+      socket.send(
+        JSON.stringify({
+          type: "chat",
+          roomId: roomId,
+          message: parsedShap,
+        })
+      );
+    }
   });
 
   const currentPath: { x: number; y: number }[] = [];

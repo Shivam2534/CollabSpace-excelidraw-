@@ -114,29 +114,33 @@ wss.on("connection", function connection(ws, req) {
      }
      */
 
-    if (parsedData.type === "chat") {
-      //Optimse it by using queue (IMP)
-      await prismaClient.chat.create({
-        data: {
-          //@ts-ignore
-          userId: userId,
-          message: parsedData.message,
-          roomId: Number(parsedData.roomId),
-        },
-      });
+    try {
+      if (parsedData.type === "chat" && parsedData.message.length > 0) {
+        //Optimse it by using queue (IMP)
+        await prismaClient.chat.create({
+          data: {
+            //@ts-ignore
+            userId: userId,
+            message: parsedData.message,
+            roomId: Number(parsedData.roomId),
+          },
+        });
 
-      allUsers.map((user) => {
-        const isPresent = user.rooms.includes(parsedData.roomId);
-        if (isPresent) {
-          user.ws.send(
-            JSON.stringify({
-              type: "chat",
-              roomId: parsedData.roomId,
-              message: parsedData.message,
-            })
-          );
-        }
-      });
+        allUsers.map((user) => {
+          const isPresent = user.rooms.includes(parsedData.roomId);
+          if (isPresent) {
+            user.ws.send(
+              JSON.stringify({
+                type: "chat",
+                roomId: parsedData.roomId,
+                message: parsedData.message,
+              })
+            );
+          }
+        });
+      }
+    } catch (error) {
+      console.log("Error while chat:", error);
     }
   });
 });

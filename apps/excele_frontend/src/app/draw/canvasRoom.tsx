@@ -6,6 +6,7 @@ import ColorPanal from "../ourComponents/colorPanal";
 import Recording from "../ourComponents/Recording";
 import ToolPanal from "../ourComponents/ToolPanal";
 import EventType from "../types/event";
+import ShareOnCanvas from "../ourComponents/shareOnCanvas";
 
 interface Props {
   roomId: string | number;
@@ -61,11 +62,13 @@ export default function CanvasRoom({ roomId }: Props) {
 
   function changeShape(shape: string) {
     if (activated == shape) {
+      console.log("called", activated, shape);
       setActivated("");
       setCurrentShape("");
+    } else {
+      setActivated(shape);
+      setCurrentShape(shape);
     }
-    setActivated(shape);
-    setCurrentShape(shape);
   }
 
   function replayDrawing(replayCtx: CanvasRenderingContext2D) {
@@ -142,6 +145,8 @@ export default function CanvasRoom({ roomId }: Props) {
         height={window.innerHeight}
         className="bg-[#121212] w-auto h-auto"
       ></canvas>
+      {/* Share button on canvas */}
+      <ShareOnCanvas roomId={roomId} />
       {/* Tools Panel */}
       {canvasRef.current && (
         <ToolPanal

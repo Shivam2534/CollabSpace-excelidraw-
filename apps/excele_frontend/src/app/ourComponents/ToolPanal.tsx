@@ -46,6 +46,7 @@ function ToolPanal({
   // Use a ref for the activated tool so that our event handlers always have the latest value.
   const activatedRef = useRef(activated);
   useEffect(() => {
+    console.log("i am called", activated);
     activatedRef.current = activated;
   }, [activated]);
 
@@ -266,8 +267,15 @@ function ToolPanal({
           <Hand />
         </Button>
         <Button
-          onClick={() => setOpenInputBox((p) => !p)}
-          className={`${activated === "ai" ? "text-red-400" : "text-white"}`}
+          onClick={() => {
+            setOpenInputBox((p) => !p);
+            changeShape("ai");
+          }}
+          className={`${
+            activated === "ai"
+              ? "bg-[#A8A5FF] hover:bg-[#908ec6] text-black"
+              : "text-white"
+          }  `}
         >
           AI
         </Button>
