@@ -7,16 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function ChatRoomClient(messages: any) {
+  const [currentUsername, setcurrentUsername] = useState("shivam");
   const [chats, setChats] = useState(messages.messages || []);
   const inputRef = useRef(null);
   const { loading, socket } = useSocket();
+  const chatContainerRef = useRef<HTMLDivElement>(null); // Ref for the chat container
 
   useEffect(() => {
     if (!loading && socket) {
       socket.send(
         JSON.stringify({
           type: "join_chat_room",
-          roomId: 13,
+          username: "shivam",
+          roomId: 14,
         })
       );
 
@@ -25,7 +28,10 @@ export function ChatRoomClient(messages: any) {
         if (parsedMsg.type === "chat_chat_room") {
           setChats((prevchat) => [
             ...prevchat,
-            { message: parsedMsg.message, sender: parsedMsg.sender || "other" },
+            {
+              message: parsedMsg.message,
+              username: parsedMsg.username || "other",
+            },
           ]);
         }
       };
@@ -38,18 +44,25 @@ export function ChatRoomClient(messages: any) {
       socket.send(
         JSON.stringify({
           type: "chat_chat_room",
-          roomId: 13,
+          roomId: 14,
           message: msg,
-          sender: "you",
+          username: "shivam",
         })
       );
       setChats((prevchat: any) => [
         ...prevchat,
-        { message: msg, sender: "you" },
+        { message: msg, username: "shivam" },
       ]);
       inputRef.current.value = "";
     }
   }
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [chats]);
 
   return (
     <div className="min-h-screen flex justify-center bg-gray-900 p-4">
@@ -73,22 +86,36 @@ export function ChatRoomClient(messages: any) {
 
         {/* Chat Messages */}
         <div
-          className=" max-h-[600px] overflow-y-auto border border-gray-700 rounded-lg p-3 space-y-2 bg-gray-900"
+          ref={chatContainerRef}
+          className="max-h-[600px] h-[600px] overflow-y-auto border border-gray-700 rounded-lg p-3 space-y-2 bg-gray-900"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
           }}
         >
           {chats.map((chat, ind) => (
-            <div
-              key={ind}
-              className={`max-w-[80%] w-fit p-2 px-3 rounded-xl ${
-                chat.sender === "you"
-                  ? "bg-blue-500 text-white ml-auto"
-                  : "bg-gray-700 text-gray-200"
-              }`}
-            >
-              <p>{chat.message}</p>
+            <div key={ind} className="space-y-1">
+              {/* Sender Name */}
+              <p
+                className={`text-sm font-medium ${
+                  chat.username === currentUsername
+                    ? "text-blue-400 text-right"
+                    : "text-gray-400"
+                }`}
+              >
+                {chat.username === currentUsername ? "You" : chat.username}
+              </p>
+
+              {/* Chat Message */}
+              <div
+                className={`max-w-[80%] w-fit p-2 px-3 rounded-xl ${
+                  chat.username === currentUsername
+                    ? "bg-blue-500 text-white ml-auto"
+                    : "bg-gray-700 text-gray-200"
+                }`}
+              >
+                <p>{chat.message}</p>
+              </div>
             </div>
           ))}
         </div>

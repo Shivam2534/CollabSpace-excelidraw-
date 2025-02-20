@@ -154,7 +154,6 @@ app.post("/api/v1/create-room", middleware, async (req, res) => {
         status: 500,
       });
     }
-    console.log("a=re");
 
     return res.status(200).json({
       message: "Room created successfully",
@@ -183,7 +182,7 @@ app.get("/api/v1/chats/:roomId", async (req, res) => {
         roomId: roomId,
       },
       orderBy: {
-        id: "desc",
+        id: "asc",
       },
       take: 50,
     });

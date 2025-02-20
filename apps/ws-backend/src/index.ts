@@ -229,6 +229,7 @@ wss.on("connection", function connection(ws, req) {
             userId: userId,
             message: parsedData.message,
             roomId: Number(parsedData.roomId),
+            username: parsedData.username || "any",
           },
         });
         // now we need to emit the message to the respective room
