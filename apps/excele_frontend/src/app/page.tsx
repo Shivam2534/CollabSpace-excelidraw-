@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import CreateRoom from "./ourComponents/CreateRoom";
 import EnterRoom from "./ourComponents/EnterRoom";
 import LandingNavbar from "./ourComponents/LandingNavbar";
+import { redirect } from "next/navigation";
 
 export default function SessionProviderFn() {
   return (
@@ -81,9 +82,16 @@ function App() {
                   <Button
                     size="lg"
                     className="h-12 px-6"
+                    onClick={() => redirect("http://localhost:3000/")}
+                  >
+                    Chat Room
+                  </Button>
+                  <Button
+                    size="lg"
+                    className="h-12 px-6"
                     onClick={() => setIsEnterRoomDialogOpen((prev) => !prev)}
                   >
-                    Join Room
+                    Join Canvas Room
                     <Pencil className="ml-2 h-4 w-4" />
                   </Button>
                   <Button
@@ -92,7 +100,7 @@ function App() {
                     className="h-12 px-6"
                     onClick={() => setIsDialogOpen((prev) => !prev)}
                   >
-                    Create Room
+                    Create Canvas Room
                   </Button>
                 </div>
               )}

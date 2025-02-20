@@ -146,7 +146,6 @@ app.post("/api/v1/create-room", middleware, async (req, res) => {
         adminId: req.userId,
       },
     });
-    console.log("we");
 
     if (!room) {
       return res.status(200).json({
@@ -342,4 +341,4 @@ app.post("/api/v1/chat", middleware, async (req, res) => {
   }
 });
 
-app.listen(3001);
+app.listen(3003);

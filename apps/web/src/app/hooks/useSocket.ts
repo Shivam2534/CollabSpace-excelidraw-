@@ -7,7 +7,7 @@ export function useSocket() {
 
   useEffect(() => {
     const ws = new WebSocket(
-      `${WS_BACKEND_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNjQ1ZTZhYi1hMjczLTRhZWQtODZkZS0yYTg5MDdiYTljNzQiLCJpYXQiOjE3MzgzMTY3NzN9.7h24DHMKI52HZgZHgAx9Was-1gP_FZG4PasmKeF0weU`
+      `${WS_BACKEND_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwOWQ1OTc0YS0xN2U5LTQ4ODEtODMwMy1hYzNlMjM5OWY0NTMiLCJpYXQiOjE3NDAwNDA1NjF9.x-Sv1b6zozhpaVRRLmreVZs1UqsYi-iA2TWurwfdOag`
     );
 
     ws.onopen = () => {

@@ -11,7 +11,14 @@ interface userType {
   rooms: string[];
   ws: WebSocket;
 }
+interface chatUserType {
+  userId: string;
+  rooms: string[];
+  ws: WebSocket;
+  username: string;
+}
 const allUsers: userType[] = [];
+const chatAllUsers: chatUserType[] = [];
 
 function verifyUser(token: string): string | null {
   try {
@@ -141,6 +148,110 @@ wss.on("connection", function connection(ws, req) {
       }
     } catch (error) {
       console.log("Error while chat:", error);
+    }
+
+    // *******************************************************
+    /*  FROM THIS , CODE OF CHAT (NOT CANVAS CHAT) STARTS    */
+    // *******************************************************
+    /* 
+     when user JOIN chat room:
+     {
+       "type": "join_chat_room",
+       "username":"shivam"
+       "roomId":"chat-room1" // number most prob.
+     }
+     */
+    if (parsedData.type == "join_chat_room") {
+      try {
+        // check that , is user already present in the chatAllUsers list or not
+        const user = chatAllUsers.find((user) => user.ws == ws);
+
+        // we are allowed to talk in a multiple rooms at a same time
+        if (user) {
+          user.rooms.push(parsedData.roomId);
+        } else {
+          // means join for the first time
+          const newUser = {
+            userId: userId,
+            rooms: [parsedData.roomId],
+            ws: ws,
+            username: parsedData.username,
+          };
+          chatAllUsers.push(newUser);
+        }
+        console.log("user join in a CHAT room,", chatAllUsers.length);
+      } catch (error) {
+        console.log("Error while joining CHAT room:", error);
+      }
+    }
+
+    /* 
+     when user Leave chat room:
+     {
+       "type": "leave_chat_room",
+       "roomId":"8" 
+     }
+     */
+    if (parsedData.type == "leave_chat_room") {
+      try {
+        // check is user exist or not
+        const user = chatAllUsers.find((user) => user.ws == ws);
+
+        if (!user) {
+          return;
+        }
+
+        user.rooms = user.rooms.filter((room) => room !== parsedData.roomId);
+
+        console.log(
+          `user leaved successfully from room-${parsedData.roomId},`,
+          user.rooms.length
+        );
+      } catch (error) {
+        console.log("Error while leaving CHAT room:", error);
+      }
+    }
+
+    /* 
+     when user CHAT in room:
+     {
+       "type": "chat_chat_room",
+       "username":"shivam",
+       "message":"hii",
+       "roomId":"8" 
+     }
+     */
+    if (parsedData.type == "chat_chat_room") {
+      try {
+        await prismaClient.chat.create({
+          data: {
+            //@ts-ignore
+            userId: userId,
+            message: parsedData.message,
+            roomId: Number(parsedData.roomId),
+          },
+        });
+        // now we need to emit the message to the respective room
+        chatAllUsers.map((user) => {
+          if (user.ws !== ws) {
+            user.rooms.find((room) => {
+              if (room === parsedData.roomId) {
+                // means this user is a part of this room, send this mesg to it
+                user.ws.send(
+                  JSON.stringify({
+                    type: "chat_chat_room",
+                    username: parsedData.username,
+                    message: parsedData.message,
+                    roomId: parsedData.roomId,
+                  })
+                );
+              }
+            });
+          }
+        });
+      } catch (error) {
+        console.log("Error while  CHAT in  chat room:", error);
+      }
     }
   });
 });
