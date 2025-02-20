@@ -341,4 +341,4 @@ app.post("/api/v1/chat", middleware, async (req, res) => {
   }
 });
 
-app.listen(3003);
+app.listen(3001);

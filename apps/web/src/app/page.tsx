@@ -1,4 +1,4 @@
-import { ChatRoomServer } from "./components/chatRoomServer";
+import { ChatRoomServer } from "./ourComponents/chatRoomServer";
 export default function Home() {
   return (
     <div>
