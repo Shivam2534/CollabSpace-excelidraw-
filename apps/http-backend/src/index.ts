@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Express } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { middleware } from "./middleware/middleware";
@@ -12,17 +12,25 @@ import { prismaClient } from "@repo/db/client";
 import cors from "cors";
 import OpenAI from "openai";
 import dotenv from "dotenv";
+import path from "path";
 
-// *************************************************************************
-const app = express();
+export const app: Express = express();
 
 app.use(cors());
 app.use(express.json());
 dotenv.config();
+app.use("/public", express.static(path.join(__dirname, "../public")));
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+app.get("/", (req, res) => {
+  res.send("server is alive");
+});
+
+import { streamRouter } from "./routes/video_stream";
+app.use("/stream", streamRouter);
 
 app.post("/api/v1/signup", async (req, res) => {
   console.log("request reached at /v1/signup endpoint");

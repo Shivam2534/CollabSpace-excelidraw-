@@ -97,6 +97,11 @@ function App() {
                     Join Canvas Room
                     <Pencil className="ml-2 h-4 w-4" />
                   </Button>
+                  <Link href={"/video_stream"}>
+                    <Button size="lg" className="h-12 px-6">
+                      Stream video
+                    </Button>
+                  </Link>
                   <Button
                     variant="outline"
                     size="lg"
