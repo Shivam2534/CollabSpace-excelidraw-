@@ -124,6 +124,18 @@ app.post("/api/v1/signin", async (req, res) => {
     data: data,
     token: jwtToken,
   });
+
+  // update user table with the accesstoken
+  const updatedUser = await prismaClient.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      accesstoken: jwtToken,
+    },
+  });
+
+  console.log("updated user-", updatedUser);
 });
 
 app.post("/api/v1/create-room", middleware, async (req, res) => {
@@ -280,6 +292,7 @@ app.post("/api/v1/checkroom", middleware, async (req, res) => {
   });
 });
 
+//Chat with AI
 app.post("/api/v1/chat", middleware, async (req, res) => {
   if (req.method === "POST") {
     const { prompt } = req.body;

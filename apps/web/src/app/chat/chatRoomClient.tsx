@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export function ChatRoomClient(messages: any) {
-  const [currentUsername, setcurrentUsername] = useState("shivam");
-  const [chats, setChats] = useState(messages.messages || []);
+export function ChatRoomClient({ messages, username, user, roomid }: any) {
+  const [chats, setChats] = useState(messages || []);
+  const [currentUsername] = useState(username);
   const inputRef = useRef(null);
   const { loading, socket } = useSocket();
   const chatContainerRef = useRef<HTMLDivElement>(null); // Ref for the chat container
@@ -18,15 +18,15 @@ export function ChatRoomClient(messages: any) {
       socket.send(
         JSON.stringify({
           type: "join_chat_room",
-          username: "shivam",
-          roomId: 14,
+          username: currentUsername,
+          roomId: roomid,
         })
       );
 
-      socket.onmessage = (event) => {
+      socket.onmessage = (event: any) => {
         const parsedMsg = JSON.parse(event.data);
         if (parsedMsg.type === "chat_chat_room") {
-          setChats((prevchat) => [
+          setChats((prevchat: any) => [
             ...prevchat,
             {
               message: parsedMsg.message,
@@ -39,20 +39,22 @@ export function ChatRoomClient(messages: any) {
   }, [socket, loading]);
 
   function sendMsg() {
+    //@ts-ignore
     const msg = inputRef.current.value;
     if (msg && socket?.readyState === WebSocket.OPEN) {
       socket.send(
         JSON.stringify({
           type: "chat_chat_room",
-          roomId: 14,
+          roomId: roomid,
           message: msg,
-          username: "shivam",
+          username: currentUsername,
         })
       );
       setChats((prevchat: any) => [
         ...prevchat,
-        { message: msg, username: "shivam" },
+        { message: msg, username: currentUsername },
       ]);
+      //@ts-ignore
       inputRef.current.value = "";
     }
   }
@@ -75,8 +77,8 @@ export function ChatRoomClient(messages: any) {
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-bold text-white">Sofia Davis</p>
-              <p className="text-sm text-gray-400">m@example.com</p>
+              <p className="font-bold text-white">{user?.user.name}</p>
+              <p className="text-sm text-gray-400">{user?.user.email}</p>
             </div>
           </div>
           {/* <Button className="ml-0 bg-gray-700 rounded-full p-1 hover:bg-gray-600">

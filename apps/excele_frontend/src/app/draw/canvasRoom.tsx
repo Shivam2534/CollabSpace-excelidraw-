@@ -62,7 +62,6 @@ export default function CanvasRoom({ roomId }: Props) {
 
   function changeShape(shape: string) {
     if (activated == shape) {
-      console.log("called", activated, shape);
       setActivated("");
       setCurrentShape("");
     } else {

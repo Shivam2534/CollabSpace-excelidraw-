@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { SessionProvider } from "next-auth/react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import CreateRoom from "./ourComponents/CreateRoom";
 import EnterRoom from "./ourComponents/EnterRoom";
@@ -30,7 +30,6 @@ export default function SessionProviderFn() {
 
 function App() {
   const { data: session, status } = useSession();
-
   const [IsDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 
   const inputRef = useRef(null);
@@ -82,7 +81,11 @@ function App() {
                   <Button
                     size="lg"
                     className="h-12 px-6"
-                    onClick={() => redirect("http://localhost:3000/")}
+                    onClick={() =>
+                      redirect(
+                        `http://localhost:3000/?user=${encodeURIComponent(JSON.stringify(session))}`
+                      )
+                    }
                   >
                     Chat Room
                   </Button>
