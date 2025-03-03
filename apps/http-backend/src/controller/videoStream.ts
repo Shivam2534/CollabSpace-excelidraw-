@@ -12,6 +12,7 @@ async function videoStream(req: Request, res: Response) {
   console.log("reached in videoStream funtion");
 
   const videoPath = req.file?.path;
+  
   if (!videoPath) {
     alert("file not exist");
     return;
@@ -55,14 +56,4 @@ async function videoStream(req: Request, res: Response) {
   });
 }
 
-async function uploadVideoStream(req: Request, res: Response) {
-  res.status(200).json({
-    message: "Video successfully uploded on Server",
-    success: true,
-    videoPath: req.file?.path,
-  });
-
-  return;
-}
-
-export { videoStream, uploadVideoStream };
+export { videoStream };
