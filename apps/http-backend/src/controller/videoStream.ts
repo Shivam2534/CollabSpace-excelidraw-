@@ -12,7 +12,7 @@ async function videoStream(req: Request, res: Response) {
   console.log("reached in videoStream funtion");
 
   const videoPath = req.file?.path;
-  
+
   if (!videoPath) {
     alert("file not exist");
     return;

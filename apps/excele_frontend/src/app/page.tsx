@@ -77,39 +77,54 @@ function App() {
                   </Link>
                 </div>
               ) : (
-                <div className="flex gap-6">
-                  <Button
-                    size="lg"
-                    className="h-12 px-6"
-                    onClick={() =>
-                      redirect(
-                        `http://localhost:3000/?user=${encodeURIComponent(JSON.stringify(session))}`
-                      )
-                    }
-                  >
-                    Chat Room
-                  </Button>
-                  <Button
-                    size="lg"
-                    className="h-12 px-6"
-                    onClick={() => setIsEnterRoomDialogOpen((prev) => !prev)}
-                  >
-                    Join Canvas Room
-                    <Pencil className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Link href={"/video_stream"}>
-                    <Button size="lg" className="h-12 px-6">
-                      Stream video
+                <div className="flex flex-col gap-6">
+                  <div className="flex gap-6">
+                    <Button
+                      size="lg"
+                      className="h-12 px-6"
+                      onClick={() =>
+                        redirect(
+                          `http://localhost:3000/?user=${encodeURIComponent(JSON.stringify(session))}`
+                        )
+                      }
+                    >
+                      Chat Room
                     </Button>
-                  </Link>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="h-12 px-6"
-                    onClick={() => setIsDialogOpen((prev) => !prev)}
-                  >
-                    Create Canvas Room
-                  </Button>
+                    <Button
+                      size="lg"
+                      className="h-12 px-6"
+                      onClick={() =>
+                        redirect(
+                          `http://localhost:3000/?user=${encodeURIComponent(JSON.stringify(session))}`
+                        )
+                      }
+                    >
+                      Video call
+                    </Button>
+                    <Link href={"/video_stream"}>
+                      <Button size="lg" className="h-12 px-6">
+                        Stream video
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className=" flex gap-6">
+                    <Button
+                      size="lg"
+                      className="h-12 px-6"
+                      onClick={() => setIsEnterRoomDialogOpen((prev) => !prev)}
+                    >
+                      Join Canvas Room
+                      <Pencil className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button
+                      // variant="outline"
+                      size="lg"
+                      className="h-12 px-6 "
+                      onClick={() => setIsDialogOpen((prev) => !prev)}
+                    >
+                      Create Canvas Room
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
