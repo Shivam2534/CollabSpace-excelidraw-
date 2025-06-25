@@ -88,6 +88,7 @@ export default async function DrawLogic(
       }
     });
   }
+
   clearCanvasBoard(ctx, canvas.width, canvas.height);
 
   let baseTimestampOffset =
@@ -216,6 +217,7 @@ export default async function DrawLogic(
       console.log("mousemove");
       const width = e.clientX - startX;
       const height = e.clientY - startY;
+      
       if (startRecording.current) {
         recordEvent("draw", { x: e.clientX, y: e.clientY });
       }

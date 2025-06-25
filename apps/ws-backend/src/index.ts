@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from "ws";
-import jwt, { decode, JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { JWT_SECRETE } from "@repo/backend-common/config";
 import { prismaClient } from "@repo/db/client";
 
@@ -39,7 +39,7 @@ function verifyUser(token: string): string | null {
 }
 
 wss.on("connection", function connection(ws, req) {
-  console.log("New connection made");
+  console.log("New connection made", ws);
   ws.on("error", console.error);
   // extracting token which we are going to send in URl
   const url = req.url;

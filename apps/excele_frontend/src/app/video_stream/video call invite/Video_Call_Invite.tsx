@@ -7,7 +7,6 @@ function Video_Call_Invite() {
   function startVideoCall() {
     setisCallStarted((p) => !p);
     settoggleShareDropDown((p) => !p);
-    // window.open("https://zoom-meeting-app-amz4.vercel.app/", "_blank");
   }
 
   return (

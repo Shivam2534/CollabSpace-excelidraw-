@@ -7,8 +7,6 @@ import {
   Sparkles,
   Github,
   Download,
-  Menu,
-  CircleUserRoundIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
@@ -91,13 +89,14 @@ function App() {
                       Chat Room
                     </Button>
                     <Button
-                      size="lg"
-                      className="h-12 px-6"
                       onClick={() =>
-                        redirect(
-                          `http://localhost:3000/?user=${encodeURIComponent(JSON.stringify(session))}`
+                        window.open(
+                          "https://zoom-meeting-app-amz4.vercel.app/sender",
+                          "_blank"
                         )
                       }
+                      size="lg"
+                      className="h-12 px-6"
                     >
                       Video call
                     </Button>
